@@ -1,0 +1,93 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "orchestration-services",
+        "description": "Microservice for mapping work order to users",
+        "version": "1.0.0",
+        "termsOfService": "https://coe.mindtree.com/coe_advwebtech/"
+    },
+    "host": "localhost:9002",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/v1/orchestration-services/apis/workorders/user/{userId}": {
+            "get": {
+                "summary": "Get Work Orders By User Id",
+                "description": "Get Work Orders By User Id\n",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [{
+                        "name": "userId",
+                        "in": "path",
+                        "type": "Integer",
+                        "required": true
+                    }],
+                "tags": [
+                    "WorkOrdersByUserId"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get Work Orders By User Id operation in response",
+                        "schema": {
+                            "$ref": "#/definitions/response"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "string"
+                }
+            }
+        },
+        "response": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object"
+                },
+                "status": {
+                    "type": "object"
+                }
+            }
+        },
+        "workOrderMapping": {
+            "type": "object",
+            "properties": {
+                "userId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}
