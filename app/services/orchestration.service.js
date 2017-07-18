@@ -25,35 +25,35 @@ function getWorkOrdersByUserId(userId) {
     })
 }
 
-function fetchWorkOrdersByUserId(userId, data, response, count, resolve, status) {
+function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
     if(status == STATUS.START) {
         //var result = [];
-        //response = result;
-        response.push({ "STEP 1": "Start"});
+        //output = result;
+        output.push({ "STEP 1": "Start"});
         logger.info("Step1 ============================================================================")
-        callWorkOrdersByUserId(userId, response, resolve);
+        callWorkOrdersByUserId(userId, output, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
         var size = (Object.keys(data).length - count);
 
         logger.info("Step2 ============================================================================")
-        response.push({ "STEP 2": "Start"});
-        response.push({ "STEP 2 - userId": userId});
-        response.push({ "STEP 2 - data": data});
-        response.push({ "STEP 2 - count": count});
-        response.push({ "STEP 2 - status": status});
+        output.push({ "STEP 2": "Start"});
+        output.push({ "STEP 2 - userId": userId});
+        output.push({ "STEP 2 - data": data});
+        output.push({ "STEP 2 - count": count});
+        output.push({ "STEP 2 - status": status});
 
-        callWorkOrder(userId, data, response, data[size], size, count, resolve, status);
+        callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
         
         logger.info("Step3 ============================================================================")
-        response.push({ "STEP 3": "Start"});
+        output.push({ "STEP 3": "Start"});
 
-        resolve(response);
+        resolve(output);
     }
 }
 
 // Invoke Service - API Gateway: JLL API, Operation : Get Work Order
-function callWorkOrder(userId, data, response, item, size, count, resolve, status) {
+function callWorkOrder(userId, data, output, item, size, count, resolve, status) {
     var getWorkOrderOutput = "";
     request(
         {
@@ -63,24 +63,24 @@ function callWorkOrder(userId, data, response, item, size, count, resolve, statu
         function (error, response, body) {
             if(body != undefined) {
                 if(body != "Service ready to receive work orders") {
-                    response.push({ "STEP 2 - body": body});
+                    output.push({ "STEP 2 - body": body});
 
                     var getWorkOrder = JSON.parse(body);
-                    response.push({ "STEP 2 - response": getWorkOrder.StatusCode});
+                    output.push({ "STEP 2 - output": getWorkOrder.StatusCode});
                 }
             }
 
             if(size != 0) {
-                fetchWorkOrdersByUserId(userId, data, response, (count + 1), resolve, STATUS.STEP1_COMPLETED);
+                fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
             } else {
-                fetchWorkOrdersByUserId(userId, data, response, 1, resolve, STATUS.STEP2_COMPLETED);
+                fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP2_COMPLETED);
             }
         }
     );
 }
 
 // Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
-function callWorkOrdersByUserId(userId, response, resolve) {
+function callWorkOrdersByUserId(userId, output, resolve) {
     request(
         {
             url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/" + userId,
@@ -90,9 +90,9 @@ function callWorkOrdersByUserId(userId, response, resolve) {
             var workOrdersByUserId = JSON.parse(body);
             var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
 
-            response.push({ "STEP 1": data});
+            output.push({ "STEP 1": data});
 
-            fetchWorkOrdersByUserId(userId, data, response, 1, resolve, STATUS.STEP1_COMPLETED);
+            fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP1_COMPLETED);
             
         }
     );
