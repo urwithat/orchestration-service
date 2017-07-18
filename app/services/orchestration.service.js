@@ -28,29 +28,34 @@ function getWorkOrdersByUserId(userId) {
 function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
     if(status == STATUS.START) {
         callWorkOrdersByUserId(userId, output, resolve);
-        output.
     } else if(status == STATUS.STEP1_COMPLETED) {
         var size = (Object.keys(data).length - count);
         callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
-        //resolve(output);
-
+        var size = (Object.keys(data).length - count);
+        callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
     } else if(status == STATUS.STEP3_COMPLETED) {
         resolve(output);
     }
 }
 
-// Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
-function callWorkOrdersByUserId(userId, output, resolve) {
+// Invoke Service - API Gateway: Work Order Master, Operation : Status By Status Code
+function callStatusByStatusCode(userId, data, output, item, size, count, resolve, status) {
     request(
         {
-            url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/" + userId,
+            url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            var workOrdersByUserId = JSON.parse(body);
-            var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
-            fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP1_COMPLETED);
+            if(body != undefined) {
+                var getStatus = JSON.parse(body);
+                output[count].workorderstatus = getStatus.data.desc;
+            }
+            if(size != 0) {
+                fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
+            } else {
+                fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP3_COMPLETED);
+            }
         }
     );
 }
@@ -63,9 +68,11 @@ function callWorkOrdersByUserId(userId, output, resolve) {
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            var workOrdersByUserId = JSON.parse(body);
-            var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
-            fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP1_COMPLETED);
+            if(body != undefined) {
+                var workOrdersByUserId = JSON.parse(body);
+                var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
+                fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP1_COMPLETED);
+            }
         }
     );
 }
@@ -84,6 +91,7 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
                     var getWorkOrder = JSON.parse(body);
                     output.push({
                         "workorderstatuscode": getWorkOrder.StatusCode,
+                        "workorderstatus": "",
                         "workorderid": item,
                         "workorderdescription": getWorkOrder.LogNoteList
                     });
@@ -92,7 +100,7 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
             if(size != 0) {
                 fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
             } else {
-                fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP2_COMPLETED);
+                fetchWorkOrdersByUserId(userId, output, output, 1, resolve, STATUS.STEP2_COMPLETED);
             }
         }
     );
