@@ -36,18 +36,18 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
         var size = (Object.keys(data).length - count);
         logger.info("userId : " + userId);
         logger.info("data : " + data.ToString());
-        logger.info("data[size] : " + data[size]);
         logger.info("size : " + size);
         logger.info("count : " + count);
+        logger.info("data[size] : " + data[size]);
         callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
         logger.info("STEP2_COMPLETED====================================================");
         var size = (Object.keys(data).length - count);
         logger.info("userId : " + userId);
         logger.info("data : " + data.ToString());
-        logger.info("data[count].workorderstatuscode : " + data[count].workorderstatuscode);
         logger.info("size : " + size);
         logger.info("count : " + count);
+        logger.info("data[count].workorderstatuscode : " + data[count].workorderstatuscode);
         callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
     } else if(status == STATUS.STEP3_COMPLETED) {
         logger.info("Done====================================================");
