@@ -21,17 +21,33 @@ var STATUS = {
 
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
-        fetchWorkOrdersByUserId(userId, "", "", 0, resolve, STATUS.START);
+        fetchWorkOrdersByUserId(userId, "", [], 0, resolve, STATUS.START);
     })
 }
 
 function fetchWorkOrdersByUserId(userId, data, response, count, resolve, status) {
     if(status == STATUS.START) {
-        callWorkOrdersByUserId(userId, resolve);
+        //var result = [];
+        //response = result;
+        response.push({ "STEP 1": "Start"});
+        logger.info("Step1 ============================================================================")
+        callWorkOrdersByUserId(userId, response, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
         var size = (Object.keys(data).length - count);
+
+        logger.info("Step2 ============================================================================")
+        response.push({ "STEP 2": "Start"});
+        response.push({ "STEP 2 - userId": userId});
+        response.push({ "STEP 2 - data": data});
+        response.push({ "STEP 2 - count": count});
+        response.push({ "STEP 2 - status": status});
+
         callWorkOrder(userId, data, response, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
+        
+        logger.info("Step3 ============================================================================")
+        response.push({ "STEP 3": "Start"});
+
         resolve(response);
     }
 }
@@ -45,10 +61,15 @@ function callWorkOrder(userId, data, response, item, size, count, resolve, statu
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            if(body != "Service ready to receive work orders") {
-                var getWorkOrder = JSON.parse(body);
-                response = response + ", " + getWorkOrder.StatusCode;
+            if(body != undefined) {
+                if(body != "Service ready to receive work orders") {
+                    response.push({ "STEP 2 - body": body});
+
+                    var getWorkOrder = JSON.parse(body);
+                    response.push({ "STEP 2 - response": getWorkOrder.StatusCode});
+                }
             }
+
             if(size != 0) {
                 fetchWorkOrdersByUserId(userId, data, response, (count + 1), resolve, STATUS.STEP1_COMPLETED);
             } else {
@@ -59,7 +80,7 @@ function callWorkOrder(userId, data, response, item, size, count, resolve, statu
 }
 
 // Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
-function callWorkOrdersByUserId(userId, resolve) {
+function callWorkOrdersByUserId(userId, response, resolve) {
     request(
         {
             url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/" + userId,
@@ -67,8 +88,11 @@ function callWorkOrdersByUserId(userId, resolve) {
         },
         function (error, response, body) {
             var workOrdersByUserId = JSON.parse(body);
-            var data = _.pluck(workOrdersByUserId.data, 'workOrderId');
-            fetchWorkOrdersByUserId(userId, data, "", 1, resolve, STATUS.STEP1_COMPLETED);
+            var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
+
+            response.push({ "STEP 1": data});
+
+            fetchWorkOrdersByUserId(userId, data, response, 1, resolve, STATUS.STEP1_COMPLETED);
             
         }
     );
