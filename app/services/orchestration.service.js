@@ -13,70 +13,66 @@ var orchestrationService = {
     getWorkOrdersByUserId: getWorkOrdersByUserId
 };
 
+var STATUS = {
+  STEP1_COMPLETED : "step1_completed",
+  STEP2_COMPLETED : "step2_completed",
+  START : "start"
+};
+
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
-        // Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
-        // request(
-        //     {
-        //         url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/M1032747",
-        //         headers : { "Content-Type" : "application/json" }
-        //     },
-        //     function (error, response, body) {
-        //         var workOrdersByUserId = JSON.parse(body);
-        //         var workOrderIds = _.pluck(workOrdersByUserId.data,'workOrderId');
-        //         var workOrdersByUserIdOutput = "";
-        //         workOrderIds.forEach(function(item) {
-        //             // Invoke Service - API Gateway: JLL API, Operation : Get Work Order
-        //             var getWorkOrderOutput = "";
-        //             request(
-        //                 {
-        //                     url : "https://pgecommerce.azure-api.net/v1/jll/workorder/MQA21260609-1",
-        //                     headers : { "Content-Type" : "application/json" }
-        //                 },
-        //                 function (error, response, body) {
-        //                     var getWorkOrder = JSON.parse(body);
-        //                     var getWorkOrderOutput = getWorkOrderOutput + ", " + getWorkOrder.StatusCode;
-        //                 }
-        //             );
-        //             workOrdersByUserIdOutput = workOrdersByUserIdOutput + getWorkOrderOutput;
-        //         });
-        //         resolve(workOrdersByUserIdOutput);
-        //     }
-        // );
-
-        request(
-            {
-                url : "https://pgecommerce.azure-api.net/v1/jll/workorder/MQA21260609-1",
-                headers : { "Content-Type" : "application/json" }
-            },
-            function (error, response, body) {
-                var getWorkOrder = JSON.parse(body);
-                resolve(getWorkOrder);
-            }
-        );
-
-        
-        
-        // var workOrderMapping = workOrderFile.workOrderMapping;
-        // if (workOrderMapping != undefined && workOrderMapping != null) {
-        //     var workOrders = _.where(workOrderMapping, {userId: userId });
-        //     if (workOrders.length > 0) {
-        //         var workOrder = _.sortBy(workOrders, function(data) { return data.createddate; });
-        //         logger.info("Work Order fetched for user with userId : " + userId + " fetched successfully {{IN SERVICE}}")
-        //         workOrder = workOrder.reverse()
-        //         resolve(_.first(workOrder));
-        //     } else {
-        //         logger.error("No assocaition with UserId found {{IN SERVICE}}");
-        //         reject("No assocaition with UserId found User");
-        //     }
-        // }
-        // else {
-        //     logger.error("Some error in fetching the Work Order for User {{IN SERVICE}}");
-        //     reject("Some error in fetching the Work Order for User");
-        // }
+        fetchWorkOrdersByUserId(userId, "", "", 0, resolve, STATUS.START);
     })
 }
 
+function fetchWorkOrdersByUserId(userId, data, response, count, resolve, status) {
+    if(status == STATUS.START) {
+        callWorkOrdersByUserId(userId, resolve);
+    } else if(status == STATUS.STEP1_COMPLETED) {
+        var size = (Object.keys(data).length - count);
+        callWorkOrder(userId, data, response, data[size], size, count, resolve, status);
+    } else if(status == STATUS.STEP2_COMPLETED) {
+        resolve(response);
+    }
+}
+
+// Invoke Service - API Gateway: JLL API, Operation : Get Work Order
+function callWorkOrder(userId, data, response, item, size, count, resolve, status) {
+    var getWorkOrderOutput = "";
+    request(
+        {
+            url : "https://pgecommerce.azure-api.net/v1/jll/workorder/" + item,
+            headers : { "Content-Type" : "application/json" }
+        },
+        function (error, response, body) {
+            if(body != "Service ready to receive work orders") {
+                var getWorkOrder = JSON.parse(body);
+                response = response + ", " + getWorkOrder.StatusCode;
+            }
+            if(size != 0) {
+                fetchWorkOrdersByUserId(userId, data, response, (count + 1), resolve, STATUS.STEP1_COMPLETED);
+            } else {
+                fetchWorkOrdersByUserId(userId, data, response, 1, resolve, STATUS.STEP2_COMPLETED);
+            }
+        }
+    );
+}
+
+// Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
+function callWorkOrdersByUserId(userId, resolve) {
+    request(
+        {
+            url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/" + userId,
+            headers : { "Content-Type" : "application/json" }
+        },
+        function (error, response, body) {
+            var workOrdersByUserId = JSON.parse(body);
+            var data = _.pluck(workOrdersByUserId.data, 'workOrderId');
+            fetchWorkOrdersByUserId(userId, data, "", 1, resolve, STATUS.STEP1_COMPLETED);
+            
+        }
+    );
+}
 
 //Exporting allthe methods in an object
 module.exports = orchestrationService;
