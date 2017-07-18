@@ -16,6 +16,7 @@ var orchestrationService = {
 var STATUS = {
   STEP1_COMPLETED : "step1_completed",
   STEP2_COMPLETED : "step2_completed",
+  STEP3_COMPLETED : "step3_completed",
   START : "start"
 };
 
@@ -26,15 +27,36 @@ function getWorkOrdersByUserId(userId) {
 }
 
 function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
+
+    // status = STATUS.STEP2_COMPLETED;
+    // output.push({
+    //     "workorderstatuscode": "ADL1000022",
+    //     "workorderstatus": "",
+    //     "workorderid": "MQA21260612-1",
+    //     "workorderdescription": "ABC"
+    // });
+    // output.push({
+    //     "workorderstatuscode": "ADL1000380",
+    //     "workorderstatus": "",
+    //     "workorderid": "M1028605",
+    //     "workorderdescription": "DEF"
+    // });
+
+    // data = output;
+
     if(status == STATUS.START) {
+        // logger.info("START====================================================");
         callWorkOrdersByUserId(userId, output, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
+        // logger.info("STEP1_COMPLETED====================================================");
         var size = (Object.keys(data).length - count);
         callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
+        // logger.info("STEP2_COMPLETED====================================================" + data[count].workorderstatuscode);
         var size = (Object.keys(data).length - count);
         callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
     } else if(status == STATUS.STEP3_COMPLETED) {
+        // logger.info("Done====================================================");
         resolve(output);
     }
 }
@@ -43,16 +65,18 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
 function callStatusByStatusCode(userId, data, output, item, size, count, resolve, status) {
     request(
         {
-            url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
+            //url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
+            url : "http://pgecommerce.azure-api.net/v1/master/status/" + item,
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
+            // logger.info("body====================================================" + body);
             if(body != undefined) {
                 var getStatus = JSON.parse(body);
                 output[count].workorderstatus = getStatus.data.desc;
             }
             if(size != 0) {
-                fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
+                fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP2_COMPLETED);
             } else {
                 fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP3_COMPLETED);
             }
