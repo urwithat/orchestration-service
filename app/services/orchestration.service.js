@@ -6,7 +6,7 @@ var logger = require("../../logger.js");
 var Promise = require('bluebird');
 var _ = require('underscore');
 var fs = require('fs');
-var https = require('https');
+var request = require('request');
 
 //Creating the object which will finally be exported
 var orchestrationService = {
@@ -15,25 +15,48 @@ var orchestrationService = {
 
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
+        // Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
+        // request(
+        //     {
+        //         url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/M1032747",
+        //         headers : { "Content-Type" : "application/json" }
+        //     },
+        //     function (error, response, body) {
+        //         var workOrdersByUserId = JSON.parse(body);
+        //         var workOrderIds = _.pluck(workOrdersByUserId.data,'workOrderId');
+        //         var workOrdersByUserIdOutput = "";
+        //         workOrderIds.forEach(function(item) {
+        //             // Invoke Service - API Gateway: JLL API, Operation : Get Work Order
+        //             var getWorkOrderOutput = "";
+        //             request(
+        //                 {
+        //                     url : "https://pgecommerce.azure-api.net/v1/jll/workorder/MQA21260609-1",
+        //                     headers : { "Content-Type" : "application/json" }
+        //                 },
+        //                 function (error, response, body) {
+        //                     var getWorkOrder = JSON.parse(body);
+        //                     var getWorkOrderOutput = getWorkOrderOutput + ", " + getWorkOrder.StatusCode;
+        //                 }
+        //             );
+        //             workOrdersByUserIdOutput = workOrdersByUserIdOutput + getWorkOrderOutput;
+        //         });
+        //         resolve(workOrdersByUserIdOutput);
+        //     }
+        // );
 
-        // Invoke Service - 
-        var options = {
-            host : 'pgecommerce.azure-api.net',
-            port : 443,
-            path : 'v1/mapping/workorders/user/' + userId,
-            method: 'GET'
-        };
+        request(
+            {
+                url : "https://pgecommerce.azure-api.net/v1/jll/workorder/MQA21260609-1",
+                headers : { "Content-Type" : "application/json" }
+            },
+            function (error, response, body) {
+                var getWorkOrder = JSON.parse(body);
+                resolve(getWorkOrder);
+            }
+        );
 
-        https.request(options, function(res) {
-            console.log('STATUS: ' + res.statusCode);
-            console.log('HEADERS: ' + JSON.stringify(res.headers));
-            res.setEncoding('utf8');
-            res.on('data', function (chunk) {
-                console.log('BODY: ' + chunk);
-            });
-        }).end();
-
-
+        
+        
         // var workOrderMapping = workOrderFile.workOrderMapping;
         // if (workOrderMapping != undefined && workOrderMapping != null) {
         //     var workOrders = _.where(workOrderMapping, {userId: userId });
