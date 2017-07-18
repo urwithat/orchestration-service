@@ -22,41 +22,36 @@ var STATUS = {
 
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
+        logger.info("KICK====================================================");
         fetchWorkOrdersByUserId(userId, "", [], 0, resolve, STATUS.START);
     })
 }
 
 function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
-
-    // status = STATUS.STEP2_COMPLETED;
-    // output.push({
-    //     "workorderstatuscode": "ADL1000022",
-    //     "workorderstatus": "",
-    //     "workorderid": "MQA21260612-1",
-    //     "workorderdescription": "ABC"
-    // });
-    // output.push({
-    //     "workorderstatuscode": "ADL1000380",
-    //     "workorderstatus": "",
-    //     "workorderid": "M1028605",
-    //     "workorderdescription": "DEF"
-    // });
-
-    // data = output;
-
     if(status == STATUS.START) {
-        // logger.info("START====================================================");
+        logger.info("START====================================================");
         callWorkOrdersByUserId(userId, output, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
-        // logger.info("STEP1_COMPLETED====================================================");
+        logger.info("STEP1_COMPLETED====================================================");
         var size = (Object.keys(data).length - count);
+        logger.info("userId : " + userId);
+        logger.info("data : " + data);
+        logger.info("data[size] : " + data[size]);
+        logger.info("size : " + size);
+        logger.info("count : " + count);
         callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
-        // logger.info("STEP2_COMPLETED====================================================" + data[count].workorderstatuscode);
+        logger.info("STEP2_COMPLETED====================================================");
         var size = (Object.keys(data).length - count);
+        logger.info("userId : " + userId);
+        logger.info("data : " + data);
+        logger.info("data[count].workorderstatuscode : " + data[count].workorderstatuscode);
+        logger.info("size : " + size);
+        logger.info("count : " + count);
         callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
     } else if(status == STATUS.STEP3_COMPLETED) {
-        // logger.info("Done====================================================");
+        logger.info("Done====================================================");
+        logger.info("output" + output);
         resolve(output);
     }
 }
@@ -70,9 +65,11 @@ function callStatusByStatusCode(userId, data, output, item, size, count, resolve
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            // logger.info("body====================================================" + body);
+            logger.info("*******************************************************");
+            logger.info("body : " + body);
             if(body != undefined) {
                 var getStatus = JSON.parse(body);
+                logger.info("getStatus.data.desc : " + getStatus.data.desc);
                 output[count].workorderstatus = getStatus.data.desc;
             }
             if(size != 0) {
@@ -92,9 +89,12 @@ function callWorkOrdersByUserId(userId, output, resolve) {
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
+            logger.info("*******************************************************");
+            logger.info("body : " + body);
             if(body != undefined) {
                 var workOrdersByUserId = JSON.parse(body);
                 var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
+                logger.info("data : " + data);
                 fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP1_COMPLETED);
             }
         }
@@ -110,6 +110,8 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
+            logger.info("*******************************************************");
+            logger.info("body : " + body);
             if(body != undefined) {
                 if(body != "Service ready to receive work orders") {
                     var getWorkOrder = JSON.parse(body);
@@ -119,6 +121,7 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
                         "workorderid": item,
                         "workorderdescription": getWorkOrder.LogNoteList
                     });
+                    logger.info("output : " + output);
                 }
             }
             if(size != 0) {
