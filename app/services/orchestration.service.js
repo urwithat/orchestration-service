@@ -33,16 +33,16 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
         callWorkOrdersByUserId(userId, output, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
         logger.info("STEP1_COMPLETED====================================================");
-        var size = (Object.keys(data).length - count);
+        var size = (Object.keys(data).length - 1);
         logger.info("userId : " + userId);
         logger.info("data : " + JSON.stringify(data));
         logger.info("size : " + size);
         logger.info("count : " + count);
-        logger.info("data[size] : " + data[size]);
+        logger.info("data[count] : " + data[count]);
         callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
     } else if(status == STATUS.STEP2_COMPLETED) {
         logger.info("STEP2_COMPLETED====================================================");
-        var size = (Object.keys(data).length - count);
+        var size = (Object.keys(data).length - 1);
         logger.info("userId : " + userId);
         logger.info("data : " + JSON.stringify(data));
         logger.info("size : " + size);
@@ -75,7 +75,7 @@ function callStatusByStatusCode(userId, data, output, item, size, count, resolve
             if(size != 0) {
                 fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP2_COMPLETED);
             } else {
-                fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP3_COMPLETED);
+                fetchWorkOrdersByUserId(userId, data, output, 0, resolve, STATUS.STEP3_COMPLETED);
             }
         }
     );
@@ -95,7 +95,7 @@ function callWorkOrdersByUserId(userId, output, resolve) {
                 var workOrdersByUserId = JSON.parse(body);
                 var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
                 logger.info("data : " + data);
-                fetchWorkOrdersByUserId(userId, data, output, 1, resolve, STATUS.STEP1_COMPLETED);
+                fetchWorkOrdersByUserId(userId, data, output, 0, resolve, STATUS.STEP1_COMPLETED);
             }
         }
     );
@@ -127,7 +127,7 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
             if(size != 0) {
                 fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
             } else {
-                fetchWorkOrdersByUserId(userId, output, output, 1, resolve, STATUS.STEP2_COMPLETED);
+                fetchWorkOrdersByUserId(userId, output, output, 0, resolve, STATUS.STEP2_COMPLETED);
             }
         }
     );
