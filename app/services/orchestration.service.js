@@ -22,48 +22,28 @@ var STATUS = {
 
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
-        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        logger.info("KICK====================================================");
         fetchWorkOrdersByUserId(userId, [], [], 0, resolve, STATUS.START);
     })
 }
 
 function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
     if(status == STATUS.START) {
-        logger.info("START====================================================");
         callWorkOrdersByUserId(userId, output, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
         if(data != undefined && JSON.stringify(data) != "[]") {
-            logger.info("STEP1_COMPLETED====================================================");
             var size = (Object.keys(data).length - 1);
-            logger.info("userId : " + userId);
-            logger.info("data : " + JSON.stringify(data));
-            logger.info("size : " + size);
-            logger.info("count : " + count);
-            logger.info("data[count] : " + data[count]);
             callWorkOrder(userId, data, output, data[count], size, count, resolve, status);
         } else {
             fetchWorkOrdersByUserId(userId, data, output, count, resolve, STATUS.STEP3_COMPLETED);
         }
     } else if(status == STATUS.STEP2_COMPLETED) {
         if(data != undefined && JSON.stringify(data) != "[]") {
-            logger.info("STEP2_COMPLETED====================================================");
             var size = (Object.keys(data).length - 1);
-            logger.info("userId : " + userId);
-            logger.info("data : " + JSON.stringify(data));
-            logger.info("size : " + size);
-            logger.info("count : " + count);
-            logger.info("data[count].workorderstatuscode : " + data[count].workorderstatuscode);
             callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
         } else {
             fetchWorkOrdersByUserId(userId, data, output, count, resolve, STATUS.STEP3_COMPLETED);
         }
     } else if(status == STATUS.STEP3_COMPLETED) {
-        logger.info("Done====================================================");
-        logger.info("output" + output);
         resolve(output);
     }
 }
@@ -76,12 +56,9 @@ function callWorkOrdersByUserId(userId, output, resolve) {
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            logger.info("*******************************************************");
-            logger.info("body : " + body);
             if(body != undefined) {
                 var workOrdersByUserId = JSON.parse(body);
                 var data = _.uniq(_.pluck(workOrdersByUserId.data, 'workOrderId'));
-                logger.info("data : " + data);
                 fetchWorkOrdersByUserId(userId, data, output, 0, resolve, STATUS.STEP1_COMPLETED);
             }
         }
@@ -97,8 +74,6 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            logger.info("*******************************************************");
-            logger.info("body : " + body);
             if(body != undefined) {
                 if(body != "Service ready to receive work orders") {
                     var getWorkOrder = JSON.parse(body);
@@ -108,9 +83,6 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
                         "workorderid": item,
                         "workorderdescription": getWorkOrder.LogNoteList
                     });
-                    logger.info("/////////////////////////////////////////////////////");
-                    logger.info("output : " + JSON.stringify(output));
-                    logger.info("/////////////////////////////////////////////////////");
                 }
             }
             if(size != count) {
@@ -130,11 +102,8 @@ function callStatusByStatusCode(userId, data, output, item, size, count, resolve
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
-            logger.info("*******************************************************");
-            logger.info("body : " + body);
             if(body != undefined) {
                 var getStatus = JSON.parse(body);
-                logger.info("getStatus.data.desc : " + getStatus.data.desc);
                 output[count].workorderstatus = getStatus.data.desc;
             }
             if(size != count) {
