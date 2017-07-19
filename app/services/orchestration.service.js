@@ -22,6 +22,10 @@ var STATUS = {
 
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
+        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        logger.info("<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         logger.info("KICK====================================================");
         fetchWorkOrdersByUserId(userId, [], [], 0, resolve, STATUS.START);
     })
@@ -40,7 +44,7 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
             logger.info("size : " + size);
             logger.info("count : " + count);
             logger.info("data[count] : " + data[count]);
-            callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
+            callWorkOrder(userId, data, output, data[count], size, count, resolve, status);
         } else {
             fetchWorkOrdersByUserId(userId, data, output, count, resolve, STATUS.STEP3_COMPLETED);
         }
@@ -62,30 +66,6 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
         logger.info("output" + output);
         resolve(output);
     }
-}
-
-// Invoke Service - API Gateway: Work Order Master, Operation : Status By Status Code
-function callStatusByStatusCode(userId, data, output, item, size, count, resolve, status) {
-    request(
-        {
-            url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
-            headers : { "Content-Type" : "application/json" }
-        },
-        function (error, response, body) {
-            logger.info("*******************************************************");
-            logger.info("body : " + body);
-            if(body != undefined) {
-                var getStatus = JSON.parse(body);
-                logger.info("getStatus.data.desc : " + getStatus.data.desc);
-                output[count].workorderstatus = getStatus.data.desc;
-            }
-            if(size != count) {
-                fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP2_COMPLETED);
-            } else {
-                fetchWorkOrdersByUserId(userId, data, output, 0, resolve, STATUS.STEP3_COMPLETED);
-            }
-        }
-    );
 }
 
 // Invoke Service - API Gateway: Work Order Mapping, Operation : Work Orders By User Id
@@ -137,6 +117,30 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
                 fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
             } else {
                 fetchWorkOrdersByUserId(userId, output, output, 0, resolve, STATUS.STEP2_COMPLETED);
+            }
+        }
+    );
+}
+
+// Invoke Service - API Gateway: Work Order Master, Operation : Status By Status Code
+function callStatusByStatusCode(userId, data, output, item, size, count, resolve, status) {
+    request(
+        {
+            url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
+            headers : { "Content-Type" : "application/json" }
+        },
+        function (error, response, body) {
+            logger.info("*******************************************************");
+            logger.info("body : " + body);
+            if(body != undefined) {
+                var getStatus = JSON.parse(body);
+                logger.info("getStatus.data.desc : " + getStatus.data.desc);
+                output[count].workorderstatus = getStatus.data.desc;
+            }
+            if(size != count) {
+                fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP2_COMPLETED);
+            } else {
+                fetchWorkOrdersByUserId(userId, data, output, 0, resolve, STATUS.STEP3_COMPLETED);
             }
         }
     );
