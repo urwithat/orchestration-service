@@ -23,7 +23,7 @@ var STATUS = {
 function getWorkOrdersByUserId(userId) {
     return new Promise(function (resolve, reject) {
         logger.info("KICK====================================================");
-        fetchWorkOrdersByUserId(userId, "", [], 0, resolve, STATUS.START);
+        fetchWorkOrdersByUserId(userId, [], [], 0, resolve, STATUS.START);
     })
 }
 
@@ -32,23 +32,31 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
         logger.info("START====================================================");
         callWorkOrdersByUserId(userId, output, resolve);
     } else if(status == STATUS.STEP1_COMPLETED) {
-        logger.info("STEP1_COMPLETED====================================================");
-        var size = (Object.keys(data).length - 1);
-        logger.info("userId : " + userId);
-        logger.info("data : " + JSON.stringify(data));
-        logger.info("size : " + size);
-        logger.info("count : " + count);
-        logger.info("data[count] : " + data[count]);
-        callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
+        if(data != undefined && JSON.stringify(data) != "[]") {
+            logger.info("STEP1_COMPLETED====================================================");
+            var size = (Object.keys(data).length - 1);
+            logger.info("userId : " + userId);
+            logger.info("data : " + JSON.stringify(data));
+            logger.info("size : " + size);
+            logger.info("count : " + count);
+            logger.info("data[count] : " + data[count]);
+            callWorkOrder(userId, data, output, data[size], size, count, resolve, status);
+        } else {
+            fetchWorkOrdersByUserId(userId, data, output, count, resolve, STATUS.STEP3_COMPLETED);
+        }
     } else if(status == STATUS.STEP2_COMPLETED) {
-        logger.info("STEP2_COMPLETED====================================================");
-        var size = (Object.keys(data).length - 1);
-        logger.info("userId : " + userId);
-        logger.info("data : " + JSON.stringify(data));
-        logger.info("size : " + size);
-        logger.info("count : " + count);
-        logger.info("data[count].workorderstatuscode : " + data[count].workorderstatuscode);
-        callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
+        if(data != undefined && JSON.stringify(data) != "[]") {
+            logger.info("STEP2_COMPLETED====================================================");
+            var size = (Object.keys(data).length - 1);
+            logger.info("userId : " + userId);
+            logger.info("data : " + JSON.stringify(data));
+            logger.info("size : " + size);
+            logger.info("count : " + count);
+            logger.info("data[count].workorderstatuscode : " + data[count].workorderstatuscode);
+            callStatusByStatusCode(userId, data, output, data[count].workorderstatuscode, size, count, resolve, status);
+        } else {
+            fetchWorkOrdersByUserId(userId, data, output, count, resolve, STATUS.STEP3_COMPLETED);
+        }
     } else if(status == STATUS.STEP3_COMPLETED) {
         logger.info("Done====================================================");
         logger.info("output" + output);
@@ -72,7 +80,7 @@ function callStatusByStatusCode(userId, data, output, item, size, count, resolve
                 logger.info("getStatus.data.desc : " + getStatus.data.desc);
                 output[count].workorderstatus = getStatus.data.desc;
             }
-            if(size != 0) {
+            if(size != count) {
                 fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP2_COMPLETED);
             } else {
                 fetchWorkOrdersByUserId(userId, data, output, 0, resolve, STATUS.STEP3_COMPLETED);
@@ -121,10 +129,12 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
                         "workorderid": item,
                         "workorderdescription": getWorkOrder.LogNoteList
                     });
+                    logger.info("/////////////////////////////////////////////////////");
                     logger.info("output : " + JSON.stringify(output));
+                    logger.info("/////////////////////////////////////////////////////");
                 }
             }
-            if(size != 0) {
+            if(size != count) {
                 fetchWorkOrdersByUserId(userId, data, output, (count + 1), resolve, STATUS.STEP1_COMPLETED);
             } else {
                 fetchWorkOrdersByUserId(userId, output, output, 0, resolve, STATUS.STEP2_COMPLETED);
