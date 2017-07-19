@@ -2,7 +2,8 @@
 /**
  * This service file contains the service layer methods for manipulating the workorder objects.
  */
-var logger = require("../../logger.js");
+var logger = require("../common/logger.js");
+
 var Promise = require('bluebird');
 var _ = require('underscore');
 var fs = require('fs');
