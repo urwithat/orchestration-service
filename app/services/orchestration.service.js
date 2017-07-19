@@ -68,8 +68,7 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
 function callStatusByStatusCode(userId, data, output, item, size, count, resolve, status) {
     request(
         {
-            //url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
-            url : "http://pgecommerce.azure-api.net/v1/master/status/" + item,
+            url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
