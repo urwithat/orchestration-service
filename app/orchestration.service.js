@@ -20,7 +20,7 @@ var workOrderMapping_getWorkOrdersByUserId = "https://pgecommerce.azure-api.net/
 // JLL API - Get Work Order
 var jllAPI_getWorkOrder = "https://pgecommerce.azure-api.net/v1/jll/workorder/";
 // Work Order Master - Status By Status Code
-var  workOrderMaster_statusByStatusCode = "https://pgecommerce.azure-api.net/v1/master/status/";
+var  workOrderMaster_statusByStatusCode = "https://pgecommerce.azure-api.net/v1/master/statuses/";
 
 var STATUS = {
   STEP1_COMPLETED : "step1_completed",
