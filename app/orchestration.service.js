@@ -14,6 +14,14 @@ var orchestrationService = {
     getWorkOrdersByUserId: getWorkOrdersByUserId
 };
 
+// Service's
+// Work Order Mapping - Get Work Orders By User Id
+var workOrderMapping_getWorkOrdersByUserId = "https://pgecommerce.azure-api.net/v1/mapping/user-workorders?userid=";
+// JLL API - Get Work Order
+var jllAPI_getWorkOrder = "https://pgecommerce.azure-api.net/v1/jll/workorder/";
+// Work Order Master - Status By Status Code
+var  workOrderMaster_statusByStatusCode = "https://pgecommerce.azure-api.net/v1/master/status/";
+
 var STATUS = {
   STEP1_COMPLETED : "step1_completed",
   STEP2_COMPLETED : "step2_completed",
@@ -53,7 +61,7 @@ function fetchWorkOrdersByUserId(userId, data, output, count, resolve, status) {
 function callWorkOrdersByUserId(userId, output, resolve) {
     request(
         {
-            url : "http://pg-work-order-map.azurewebsites.net/v1/work-order-services/apis/workorders/user/" + userId,
+            url : workOrderMapping_getWorkOrdersByUserId + userId,
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
@@ -71,7 +79,7 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
     var getWorkOrderOutput = "";
     request(
         {
-            url : "https://pgecommerce.azure-api.net/v1/jll/workorder/" + item,
+            url : jllAPI_getWorkOrder + item,
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {
@@ -99,7 +107,7 @@ function callWorkOrder(userId, data, output, item, size, count, resolve, status)
 function callStatusByStatusCode(userId, data, output, item, size, count, resolve, status) {
     request(
         {
-            url : "https://pgecommerce.azure-api.net/v1/master/status/" + item,
+            url : workOrderMaster_statusByStatusCode + item,
             headers : { "Content-Type" : "application/json" }
         },
         function (error, response, body) {

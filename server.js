@@ -28,7 +28,7 @@ if (!fs.existsSync("logs")) {
 }
 
 /**
- * Seeting Limits
+ * Setting Limits
  */
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', "extended": false }));
@@ -42,7 +42,7 @@ corsFilter(router);
  * Endpoint for Our Custom Services
  * Defining routes
  */
-app.use('/v1/orchestration-services/apis', router);
+app.use('/v1/orchestration/apis', router);
 orchestrationRoute.init(router);
 
 /**
@@ -57,7 +57,7 @@ app.get('/swagger', function(req, res) {
 /**
  * Endpoint for Swagger UI
  */
-app.use('/v1/orchestration-services/apis/docs', swaggerUi({
+app.use('/v1/orchestration/apis/docs', swaggerUi({
   docs: '/swagger'
 }));
 

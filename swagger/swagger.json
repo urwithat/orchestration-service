@@ -6,7 +6,7 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/v1/orchestration-services/apis/workorders/user/{userId}": {
+        "/v1/orchestration/apis/workorders/user/{userId}": {
             "get": {
                 "summary": "Get Work Orders By User Id",
                 "description": "Get Work Orders By User Id\n",
