@@ -16,12 +16,14 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [{
+                "parameters": [
+                    {
                         "name": "userId",
                         "in": "path",
-                        "type": "Integer",
+                        "type": "string",
                         "required": true
-                    }],
+                    }
+                ],
                 "tags": [
                     "WorkOrdersByUserId"
                 ],
