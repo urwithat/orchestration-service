@@ -16,11 +16,11 @@ var orchestrationService = {
 
 // Service's
 // Work Order Mapping - Get Work Orders By User Id
-var workOrderMapping_getWorkOrdersByUserId = "https://pgecommerce.azure-api.net/v1/mapping/user-workorders?userid=";
+var workOrderMapping_getWorkOrdersByUserId = "http://pgecommerce.azure-api.net/v1/mapping/user-workorders?userid=";
 // JLL API - Get Work Order
-var jllAPI_getWorkOrder = "https://pgecommerce.azure-api.net/v1/jll/workorder/";
+var jllAPI_getWorkOrder = "http://pgecommerce.azure-api.net/v1/jll/workorder/";
 // Work Order Master - Status By Status Code
-var  workOrderMaster_statusByStatusCode = "https://pgecommerce.azure-api.net/v1/master/statuses/";
+var  workOrderMaster_statusByStatusCode = "http://pgecommerce.azure-api.net/v1/master/statuses/";
 
 var STATUS = {
   STEP1_COMPLETED : "step1_completed",
