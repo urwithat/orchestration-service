@@ -19,11 +19,9 @@ function getWebhook(req, res) {
     var userId = req.body.result.parameters["userId"];
     if(userId !== undefined && userId !== "") {
         orchestrationService.getWorkOrdersByUserId(userId).then(function (result) {
-            logger.info("Data :");
+            logger.info("Data : ================ Atif Test ");
             logger.info(result);
-            logger.info("Data data :");
-            logger.info(result.data);
-            result.data.forEach(function(workorder, i) {
+            result.forEach(function(workorder, i) {
                 if(response != "") response = response + " ";
                 else response = "Your Work Orders : ";
                 response = response + "Description '" + workorder.workorderdescription[0].Note.trim() + "' has a status of '" + workorder.workorderstatus + "'.";
