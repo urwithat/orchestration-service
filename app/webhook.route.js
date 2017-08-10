@@ -5,6 +5,8 @@ var orchestrationService = require("./orchestration.service.js");
 var logger = require("../common/logger.js");
 var Response = require("../common/response.js");
 var Promise = require("bluebird");
+var path = require('path');
+var fs = require("fs");
 
 // Creating the object to be exported.
 // http://localhost:9002/v1/orchestration/apis/webhook
@@ -12,6 +14,8 @@ var Promise = require("bluebird");
 // User ID - 29:1FnE-gdUEBY5j8vY7LKYtgrWLLvOzuLHAN5VbegVP7trngAmaxfqWHX7g46x1f-2F
 function init(router) {
     router.route('/webhook').post(getWebhook);
+    router.route('/logs').get(getLogs);
+    router.route('/logs/:fileId').get(getLogs);
 };
 
 function getWebhook(req, res) {
@@ -40,5 +44,30 @@ function getWebhook(req, res) {
         res.status(500).json(response);
     }
 };
+
+function getLogs(req, res) {
+    var fileId = req.params.fileId;
+    if(fileId) {
+        var files = allFilesFromFolder(path.join("./logs/"));
+        if(fileId < files.length) {
+            var file = path.join("./logs/" + files[fileId].fileName);
+            res.download(file);
+        } else {
+            res.send(JSON.parse('{"status" : "Requested files does not exist"}'));
+        }
+    } else {
+        var files = allFilesFromFolder(path.join("./logs/"));
+        res.send(files);
+    }
+};
+
+function allFilesFromFolder(dir) {
+    var results = [];
+    fs.readdirSync(dir).forEach(function(file, i) {
+        results.push(JSON.parse('{"index" : "' + i + '", "fileName": "' + file + '"}'));
+    });
+    return results;
+};
+
 
 module.exports.init = init;
