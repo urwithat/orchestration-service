@@ -2,11 +2,13 @@
  * Importing required
  */
 var orchestrationService = require("./orchestration.service.js");
+var products = require('../data/products.json')
 var logger = require("../common/logger.js");
 var Response = require("../common/response.js");
 var Promise = require("bluebird");
 var path = require('path');
 var fs = require("fs");
+var _ = require('underscore');
 
 // Creating the object to be exported.
 // http://localhost:9002/v1/orchestration/apis/webhook
@@ -21,6 +23,7 @@ function init(router) {
 function getWebhook(req, res) {
     var response = "";
     var userId = req.body.result.parameters["userId"];
+    var productName = req.body.result.parameters["productName"];
     if(userId !== undefined && userId !== "") {
         orchestrationService.getWorkOrdersByUserId(userId).then(function (result) {
             logger.info("Data : ================ Atif Test ");
@@ -38,6 +41,15 @@ function getWebhook(req, res) {
             response.status.message = "Work Orders for User with id : " + userId + " were not fetched successfully";
             res.status(500).json(response);
         });
+    } else if(productName !== undefined && productName !== "") {
+        var product = _.findWhere(products, { name: productName });
+        if(product) {
+            response = product.description;
+            res.status(200).json(response);
+        } else {
+            response = "Could not find the product";
+            res.status(500).json(response);
+        }
     } else {
         response.status.code = "500";
         response.status.message = "Work Orders for User with id : " + userId + " were not fetched successfully, because User Id Not provided";
