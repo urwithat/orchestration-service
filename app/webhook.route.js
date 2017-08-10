@@ -24,10 +24,10 @@ function getWebhook(req, res) {
     var response = "";
     var userId = req.body.result.parameters["userId"];
     var productName = req.body.result.parameters["productName"];
+    logger.info("userId :: " + userId);
+    logger.info("productName :: " + productName);
     if(userId !== undefined && userId !== "") {
         orchestrationService.getWorkOrdersByUserId(userId).then(function (result) {
-            logger.info("Data : ================ Atif Test ");
-            logger.info(result);
             result.forEach(function(workorder, i) {
                 if(response != "") response = response + " ";
                 else response = "Your Work Orders : ";
@@ -36,23 +36,22 @@ function getWebhook(req, res) {
             logger.info("Work Order for User with id :" + userId + " fetched successfully.");
             res.status(200).json(response);
         }).catch(function (error) {
-            logger.error("error while fetching Work Order with User id :" + userId + " {{In Controller}}", error);
-            response.status.code = "500";
-            response.status.message = "Work Orders for User with id : " + userId + " were not fetched successfully";
+            response = "Work Orders for User with id : " + userId + " were not fetched successfully";
             res.status(500).json(response);
         });
     } else if(productName !== undefined && productName !== "") {
         var product = _.findWhere(products, { name: productName });
         if(product) {
             response = product.description;
+            logger.info("Product Name :" + productName + " fetched successfully.");
             res.status(200).json(response);
         } else {
             response = "Could not find the product";
+            logger.info("Product Name :" + productName + " not fetched successfully.");
             res.status(500).json(response);
         }
     } else {
-        response.status.code = "500";
-        response.status.message = "Work Orders for User with id : " + userId + " were not fetched successfully, because User Id Not provided";
+        response = "Details not fetched successfully";
         res.status(500).json(response);
     }
 };
