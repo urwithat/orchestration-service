@@ -34,26 +34,23 @@ function getWebhook(req, res) {
                 response = response + "Description '" + workorder.workorderdescription[0].Note.trim() + "' has a status of '" + workorder.workorderstatus + "'.";
             });
             logger.info("Work Order for User with id :" + userId + " fetched successfully.");
-            res.status(200).json(response);
         }).catch(function (error) {
             response = "Work Orders for User with id : " + userId + " were not fetched successfully";
-            res.status(500).json(response);
         });
     } else if(productName !== undefined && productName !== "") {
         var product = _.findWhere(products, { name: productName });
         if(product) {
             response = product.description;
             logger.info("Product Name :" + productName + " fetched successfully.");
-            res.status(200).json(response);
         } else {
-            response = "Could not find the product";
+            response = "Could not find the product '" + productName + "'";
             logger.info("Product Name :" + productName + " not fetched successfully.");
-            res.status(500).json(response);
         }
     } else {
         response = "Details not fetched successfully";
-        res.status(500).json(response);
     }
+    res.setHeader("Content-Type", "application/json");
+    res.send(JSON.stringify({ 'speech': response, 'displayText': response }));
 };
 
 function getLogs(req, res) {
