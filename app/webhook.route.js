@@ -13,7 +13,7 @@ function init(router) {
 
 function getWebhook(req, res) {
     var response = new Response();
-    var userId = req.params.userId;
+    var userId = req.body.result.parameters["userId"];
     orchestrationService.getWorkOrdersByUserId(userId).then(function (result) {
         response.data = result;
         response.status.code = "200";
