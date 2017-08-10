@@ -15,13 +15,15 @@ function init(router) {
 };
 
 function getWebhook(req, res) {
-    var response = new Response();
+    var response = "";
     var userId = req.body.result.parameters["userId"];
     if(userId !== undefined && userId !== "") {
         orchestrationService.getWorkOrdersByUserId(userId).then(function (result) {
-            response.data = result;
-            response.status.code = "200";
-            response.status.message = "Work Order for User with id :" + userId + " fetched successfully.";
+            result.data.forEach(function(workorder, i) {
+                if(response != "") response = response + " ";
+                else response = "Your Work Orders : ";
+                response = response + "Description '" + workorder.workorderdescription[0].Note.trim() + "' has a status of '" + workorder.workorderstatus + "'.";
+            });
             logger.info("Work Order for User with id :" + userId + " fetched successfully.");
             res.status(200).json(response);
         }).catch(function (error) {
