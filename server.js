@@ -3,7 +3,6 @@
  * Import Files
  */
 var orchestrationRoute = require("./app/orchestration.route.js");
-var webhookRoute = require("./app/webhook.route.js");
 var swagger = require("./swagger/swagger.json");
 var corsFilter = require("./common/cors.filter");
 var logger = require("./common/logger.js");
@@ -45,9 +44,6 @@ corsFilter(router);
  */
 app.use('/v1/orchestration/apis', router);
 orchestrationRoute.init(router);
-
-app.use('/v1/orchestration/apis', router);
-webhookRoute.init(router);
 
 /**
  * Endpoint to get Swagger API specification
